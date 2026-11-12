@@ -46,6 +46,31 @@ document.querySelectorAll(".reveal").forEach(element => {
   observer.observe(element);
 });
 
+// Scroll-driven taco assembly: activate the step closest to the viewport center.
+const tacoBuild = document.querySelector("#tacoBuild");
+const tacoPhoto = document.querySelector("#tacoPhoto");
+const prepSteps = [...document.querySelectorAll(".prep-step")];
+
+if (tacoBuild && prepSteps.length) {
+  const prepObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const step = Number(entry.target.dataset.step);
+      tacoBuild.dataset.stage = step;
+      if (tacoPhoto && entry.target.dataset.image && tacoPhoto.getAttribute("src") !== entry.target.dataset.image) {
+        tacoPhoto.classList.remove("photo-arrive");
+        tacoPhoto.src = entry.target.dataset.image;
+        void tacoPhoto.offsetWidth;
+        tacoPhoto.classList.add("photo-arrive");
+      }
+      prepSteps.forEach((item, index) => item.classList.toggle("active", index === step));
+    });
+  }, { rootMargin: "-38% 0px -38% 0px", threshold: 0 });
+
+  prepSteps.forEach(step => prepObserver.observe(step));
+  tacoBuild.dataset.stage = "0";
+}
+
 // 3D TILT EFFECT
 const canHover = window.matchMedia(
   "(hover: hover) and (pointer: fine)"
